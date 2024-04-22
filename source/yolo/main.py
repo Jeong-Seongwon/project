@@ -3,8 +3,7 @@ from ultralytics import YOLO
 
 CONFIDENCE_THRESHOLD = 0.7
 
-#cam_index = 0 #내장 캠
-cam_index = "./data/video/street.mp4"
+cam_index = 0 #내장 캠
 
 cap = cv2.VideoCapture(cam_index)
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
