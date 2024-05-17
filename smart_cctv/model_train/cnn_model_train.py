@@ -5,8 +5,8 @@ from sklearn.model_selection import train_test_split
 import tensorflow as tf
 
 
-data_path = "./model_train/data/train_data_set"
-hdf5_file = "./model_train/models/cnn_model.hdf5"
+data_path = "./data/train_data_set"
+hdf5_file = "./models/cnn_model.hdf5"
 
 def cnn_model_train(data_path, epochs=10, batch=32, imgsz=128):
     images = []
