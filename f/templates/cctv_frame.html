@@ -3,22 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CCTV Page</title>
-
+    <title>Detection Result</title>
 </head>
 <body>
-    <h1>CCTV Page</h1>
-
-    <!-- 사용자 이름과 접속 메시지 출력 -->
-    <div>
-        <p style="display: inline;">Welcome, {{ username }}님, 접속 중 입니다.</p>
-    </div>
-
-    <!-- CCTV 영상 플레이어 -->
-    <video width="800" height="450" controls>
-        <source src="{{ url_for('static', filename='swoon.mp4') }}" type="video/mp4">
+    <h1>Detection Result</h1>
+    <video width="960" height="540" controls>
+        <source src="{{ result_file }}" type="video/avi">
         Your browser does not support the video tag.
     </video>
-
+    <br>
+    <a href="{{ url_for('index') }}">Go back to upload another video</a>
 </body>
 </html>

@@ -3,66 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Index Frame Content</title>
+    <title>Detection Result</title>
 </head>
-<body id="body">
-    <h1>LOGS Page</h1> <!-- 이 부분은 한 번만 표시됩니다. -->
-    <table id="log-table">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Occurrence Time</th>
-                <th>Incident</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Logs will be dynamically added here -->
-            {% for log in logs %}
-            <tr>
-                <td><a href="./static/"{{ log.date }}".mp4">{{ log.date }}</a></td>
-                <td>{{ log.occurrence_time }}</td>
-                <td>{{ log.incident }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <script>
-        // 응답 받은 데이터를 테이블에 추가
-            function updateLogs() {
-         
-        // AJAX를 사용하여 서버에서 데이터 가져오기
-            var xhr = new XMLHttpRequest();
-            xhr.onreadystatechange = function() {
-            if (xhr.readyState === XMLHttpRequest.DONE) {
-            if (xhr.status === 200) {
-            
-        // 새로운 데이터를 테이블에 추가하기 전에 이전 데이터 삭제
-            var logTableBody = document.getElementById('body');
-            logTableBody.innerHTML = ''; // 이전 데이터 삭제
-
-
-
-        // 새로운 데이터를 테이블에 추가
-            var newRow = document.createElement('tbody');
-            newRow.innerHTML = xhr.responseText;
-            logTableBody.appendChild(newRow);
-
-           } 
-            else {
-            console.error('서버로부터 데이터를 가져오지 못했습니다.');
-          }
-            
-        }
-    };
-    xhr.open('GET', '/logs', true); // 데이터를 가져올 엔드포인트 설정
-    xhr.send();
-}
-
-
-// 일정 시간마다 페이지 업데이트 설정 (예: 5초마다)
-setInterval(updateLogs, 5000); // 5000 밀리초 = 5초
-
-    </script>
+<body>
+    <h1>Detection Result</h1>
+    <video width="960" height="540" controls>
+        <source src="{{ result_file }}" type="video/avi">
+        Your browser does not support the video tag.
+    </video>
+    <br>
+    <a href="{{ url_for('index_frame') }}">Go back to logs</a>
 </body>
 </html>

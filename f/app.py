@@ -1,12 +1,20 @@
 from flask import Flask, render_template, request, redirect, url_for, session
+import os
 import sqlite3
+from predict import Predict
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
+predict_instance = Predict()
+
+UPLOAD_FOLDER = 'static/uploads'
+RESULT_FOLDER = 'static/results'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['RESULT_FOLDER'] = RESULT_FOLDER
 
 # SQLite 데이터베이스 연결
 def get_db_connection():
-    conn = sqlite3.connect('C:/Users/602-13/f/cctv_manager.sqlite')
+    conn = sqlite3.connect('C:/Users/602-13/k/cctv_manager.sqlite')
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -15,6 +23,15 @@ def get_logs():
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT date, occurrence_time, incident FROM cctvlog")
+    logs = cursor.fetchall()
+    conn.close()
+    return logs
+
+# 특정 날짜의 로그 정보 가져오기
+def get_logs_by_date(date):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT occurrence_time, incident FROM cctvlog WHERE date = ?", (date,))
     logs = cursor.fetchall()
     conn.close()
     return logs
@@ -108,13 +125,42 @@ def index_frame():
     else:
         return redirect(url_for('login'))
 
-
+# 특정 날짜 로그 페이지 렌더링
+@app.route('/index')
+def index():
+    if 'username' in session:
+        date = request.args.get('date')
+        logs = get_logs_by_date(date)
+        return render_template('index.html', date=date, logs=logs)
+    else:
+        return redirect(url_for('login'))
 
 # 로그아웃 처리
 @app.route('/logout', methods=['GET'])
 def logout():
     session.pop('username', None)  # 세션에서 사용자 이름 제거
     return redirect(url_for('login'))
+
+# 비디오 파일 업로드 및 객체 검출
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    if 'file' not in request.files:
+        return redirect(request.url)
+    file = request.files['file']
+    if file.filename == '':
+        return redirect(request.url)
+    if file:
+        filename = file.filename
+        filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(filepath)
+        result_path = predict_instance.detect_objects(filepath)
+        result_filename = os.path.basename(result_path)
+        return redirect(url_for('show_result', filename=result_filename))
+
+@app.route('/result/<filename>')
+def show_result(filename):
+    result_file_url = os.path.join(app.config['RESULT_FOLDER'], filename)
+    return render_template('cctv_frame.html', result_file=result_file_url)
 
 if __name__ == '__main__':
     app.run(debug=True)
