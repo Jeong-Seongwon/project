@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCTV Page</title>
+
+</head>
+<body>
+    <h1>CCTV Page</h1>
+
+    <!-- 사용자 이름과 접속 메시지 출력 -->
+    <div>
+        <p style="display: inline;">Welcome, {{ username }}님, 접속 중 입니다.</p>
+    </div>
+
+    <!-- CCTV 영상 플레이어 -->
+    <video width="800" height="450" controls>
+        <source src="{{ url_for('static', filename='swoon.mp4') }}" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+</body>
+</html>
