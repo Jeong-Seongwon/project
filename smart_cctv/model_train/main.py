@@ -1,30 +1,31 @@
+import subprocess
+
+# requirements.txt에서 필요한 패키지 목록 가져와 설치
+def install_dependencies():
+    try:
+        # requirements.txt 파일에 명시된 패키지 목록 가져오기
+        with open('requirements.txt', 'r') as f:
+            required_packages = [line.strip() for line in f if not line.startswith('#') and line.strip()]
+
+        # 패키지를 requirements.txt 파일에 명시된 버전 이상으로 설치
+        subprocess.check_call(['pip', 'install'] + required_packages)
+        print("Dependencies installed successfully!")
+    except subprocess.CalledProcessError as e:
+        print("Failed to install dependencies:", e)
+
+install_dependencies()
+
 import tkinter as tk
 from tkinter import ttk
-import subprocess
 
 import yolov8_dataset_preprocessing as preprocess
 import yolo_model_train as train
 import yolo_predict as predict
 
 
-
 class MainApp():
     def __init__(self):
-        self.install_dependencies() # requirements.txt에서 필요한 패키지 목록 가져와 설치
         self.run()
-
-
-    def install_dependencies(self):
-        try:
-            # requirements.txt 파일에 명시된 패키지 목록 가져오기
-            with open('requirements.txt', 'r') as f:
-                required_packages = [line.strip() for line in f if not line.startswith('#') and line.strip()]
-
-            # 패키지를 requirements.txt 파일에 명시된 버전 이상으로 설치
-            subprocess.check_call(['pip', 'install'] + required_packages)
-            print("Dependencies installed successfully!")
-        except subprocess.CalledProcessError as e:
-            print("Failed to install dependencies:", e)
 
 
     def create_tab1_gui(self, tab):
