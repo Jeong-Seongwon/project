@@ -18,6 +18,8 @@ class Predict():
 
         self.origin_cap = None
         self.cap = None
+        self.origin_out = None
+        self.yolo_out = None
         self.size = (960, 540)
 
         # 연속 검출 카운트
@@ -26,7 +28,12 @@ class Predict():
         self.model = YOLO('./runs/detect/train/weights/best.pt')
 
         # IP 카메라 또는 스트리밍 서버의 URL
-        self.url = './data/cctv/2024-05-13.mp4'
+        self.stream_urls = [
+            './data/cctv/cctv_1.mp4',
+            './data/cctv/cctv_2.mp4'
+        ]
+
+        self.url = self.stream_urls[0]
 
         # label.txt 에서 label 목록 가져오기
         self.labels=[]
@@ -48,8 +55,6 @@ class Predict():
 
         self.continuous_detection_count = 0
         self.cap = cv2.VideoCapture(self.url)
-
-
 
 
     def load_video(self):
@@ -321,15 +326,22 @@ class Predict():
             return -1
         
         self.cctv_video_playing = False
-        self.origin_cap.release()
-        self.cap.release()
-        self.origin_out.release()
-        self.yolo_out.release()
+        if self.origin_cap:
+            self.origin_cap.release()
+        if self.cap:
+            self.cap.release()
+        if self.origin_out:
+            self.origin_out.release()
+        if self.yolo_out:
+            self.yolo_out.release()
 
 
 
     def create_gui(self):
-        self.models_frame = tk.Frame(self.top)
+        self.predict_frame = tk.Frame(self.top)
+        self.predict_frame.pack()
+
+        self.models_frame = tk.Frame(self.predict_frame)
         self.models_frame.grid(row=0, column=0, padx=10, pady=20)
 
         self.load_cctv_button = tk.Button(self.models_frame, text="CCTV", width=25, height=2, command=self.load_cctv)
@@ -360,13 +372,13 @@ class Predict():
 
 
 
-        self.image_canvas = tk.Canvas(self.top, width=960, height=540, bg="white")
+        self.image_canvas = tk.Canvas(self.predict_frame, width=960, height=540, bg="white")
         self.image_canvas.grid(row=0, column=1, padx=10, pady=20)
 
 
 
         # 로그
-        self.log_frame = tk.Frame(self.top)
+        self.log_frame = tk.Frame(self.predict_frame)
         self.log_frame.grid(row=0, column=2, padx=10, pady=20)
 
         self.text_log_label = tk.Label(self.log_frame, text="Incident Log")
@@ -378,6 +390,158 @@ class Predict():
                                     font = ("Times New Roman",10),
                                     state="disabled")
         self.text_log.grid(row=1, column=0, padx=3, pady=3)
+
+
+
+        self.cctv_frame = tk.Frame(self.top)
+        self.cctv_frame.pack()
+
+
+
+        if self.stream_urls:
+            for url in self.stream_urls:
+                CCTVStream(self.cctv_frame, url, self)
+
+
+
+
+class ClickableLabel(tk.Label):
+    def __init__(self, parent, stream_url, predict_instance, *args, **kwargs):
+        super().__init__(parent, *args, **kwargs)
+        self.stream_url = stream_url
+        self.predict_instance = predict_instance
+        self.bind("<Button-1>", self.on_click)
+
+    def on_click(self, event):
+        self.predict_instance.url = self.stream_url
+        self.predict_instance.load_cctv()  # 클릭 시 실행할 동작을 여기에 추가
+
+
+
+class CCTVStream:
+    def __init__(self, root, stream_url, predict_instance):
+        self.root = root
+        self.stream_url = stream_url
+        # cctv 이름
+        self.cctv = stream_url.split("/")[-1]
+        self.predict_instance = predict_instance
+
+        self.continuous_detection_count = 0
+
+        self.cap = cv2.VideoCapture(stream_url)
+        
+        self.label = ClickableLabel(root, stream_url, predict_instance)
+        self.label.pack(side='left')
+        
+        self.thread = threading.Thread(target=self.update_frame, daemon=True)
+        self.thread.start()
+
+
+    def update_frame(self):
+        while True:
+            ret, frame = self.cap.read()
+            if not ret:
+                break
+            
+            self.display_video(frame)
+
+
+    def display_video(self, frame):
+        image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        results = self.predict_instance.model(image)
+        plots = results[0].plot()
+        self.image_print(plots) #########################
+
+        if results[0].boxes:
+            if self.continuous_detection_count < 150:
+                self.continuous_detection_count += 1
+
+            # 결과가 이미 출력되지 않았고, 연속 객체 검출 횟수가 150이 되었을 때
+            if not self.printed_detection and self.continuous_detection_count == 150:
+                # 5초간 지속되면
+                self.predict_results(results)
+                self.results_to_database()  # db에 저장
+                self.printed_detection = True  # 결과 출력 플래그를 설정
+                self.start_timer()
+
+        else:
+            if self.continuous_detection_count > 0:
+                self.continuous_detection_count -= 1
+        return plots
+
+
+    def image_print(self, image):
+        resized_image = cv2.resize(image, (200, 150))
+            
+        # Convert the frame to a PIL Image
+        image = Image.fromarray(resized_image)
+        # Convert the PIL Image to a PhotoImage
+        pil_image = ImageTk.PhotoImage(image)
+        
+        self.label.configure(image=pil_image)
+        self.label.image = pil_image
+
+
+
+    def start_timer(self): # 결과 출력 여부 타이머 쓰레드
+        timer_thread = threading.Thread(target=self.reset_printed_detection)
+        timer_thread.daemon = True
+        timer_thread.start()
+
+
+    def reset_printed_detection(self):
+        # 1분 후에 결과 출력 여부 초기화
+        time.sleep(60)
+        self.printed_detection = False
+
+
+    def predict_results(self, results):
+        # 결과에서 라벨인덱스 검출
+        for r in results:
+            self.results_label = []
+            for cls_value in r.boxes.cls:
+                label_index = int(cls_value.item())
+                # label 검출
+                self.results_label.append(self.predict_instance.labels[label_index])
+        
+        self.incident = ",".join(self.results_label)
+
+        # 현재 날짜를 가져옵니다.
+        self.current_date = datetime.date.today()
+
+        # 년월일 형식으로 날짜를 출력합니다.
+        self.formatted_date = self.current_date.strftime("%Y-%m-%d")
+
+        # 재생 시간 얻기
+        playback_time_ms = self.cap.get(cv2.CAP_PROP_POS_MSEC)
+
+        # 밀리초(ms)를 시, 분, 초로 변환
+        playback_time_sec = playback_time_ms // 1000
+        self.hours = int(playback_time_sec // 3600)
+        self.minutes = int((playback_time_sec % 3600) // 60)
+        self.seconds = int(playback_time_sec % 60)
+
+        self.occurrence_time = "{:02d}:{:02d}:{:02d}".format(self.hours, self.minutes, self.seconds)
+
+        self.predict_instance.my_log(self.formatted_date + " " + self.occurrence_time + " " + ",".join(self.results_label))
+
+
+    def results_to_database(self):
+        db_path = "cctv_manager.sqlite"
+        # 데이터베이스 연결 설정
+        with sqlite3.connect(db_path) as conn:
+            cursor = conn.cursor()
+
+            # 예측 결과를 데이터베이스에 삽입하는 SQL 쿼리
+            insert_query = "INSERT INTO cctvlog (cctv, date, occurrence_time, incident) VALUES (?, ?, ?, ?)"  # 필요한 만큼 열과 값을 적절히 수정
+
+            # 쿼리 실행
+            cursor.execute(insert_query, (self.cctv, self.formatted_date, self.occurrence_time, self.incident))  # 결과 값에 맞게 값을 수정
+
+            # 변경사항 커밋
+            conn.commit()
+
+
 
 
 if __name__ == "__main__":
