@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detection Result</title>
+</head>
+<body>
+    <h1>Detection Result</h1>
+    <video width="960" height="540" controls>
+        <source src="{{ result_file }}" type="video/avi">
+        Your browser does not support the video tag.
+    </video>
+    <br>
+    <a href="{{ url_for('index_frame') }}">Go back to logs</a>
+</body>
+</html>
