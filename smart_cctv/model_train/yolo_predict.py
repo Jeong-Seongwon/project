@@ -233,7 +233,7 @@ class Predict():
 
 
     def results_to_database(self):
-        db_path = "cctv_manager.sqlite"
+        db_path = "../cctv_manager.sqlite"
         # 데이터베이스 연결 설정
         with sqlite3.connect(db_path) as conn:
             cursor = conn.cursor()
@@ -527,7 +527,7 @@ class CCTVStream:
 
 
     def results_to_database(self):
-        db_path = "cctv_manager.sqlite"
+        db_path = "../cctv_manager.sqlite"
         # 데이터베이스 연결 설정
         with sqlite3.connect(db_path) as conn:
             cursor = conn.cursor()
