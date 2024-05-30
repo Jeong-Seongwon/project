@@ -24,7 +24,7 @@ import os
 
 import yolov8_dataset_preprocessing as preprocess
 import yolo_model_train as train
-import yolo_predict as predict
+# import yolo_predict as predict
 import select_project
 
 
@@ -33,8 +33,8 @@ import select_project
 class MainApp():
     def __init__(self):
         self.project_path = os.getcwd() # 현 디렉토리로 기본값 설정
-        self.dataset_path = "data/dataset"
-        self.runs_path = "runs"
+        self.dataset_path = os.path.join(self.project_path, "data", "dataset")
+        self.runs_path = os.path.join(self.project_path, "runs")
 
         self.run()
 
@@ -45,17 +45,17 @@ class MainApp():
 
     def create_tab1_gui(self, tab):
         # 탭 1의 GUI 생성
-        self.preprocess_tab = preprocess.Preprocess(tab)
+        self.preprocess_tab = preprocess.Preprocess(tab, self)
 
 
     def create_tab2_gui(self, tab):
         # 탭 2의 GUI 생성
-        self.train_tab = train.Train(tab)
+        self.train_tab = train.Train(tab, self)
 
 
-    def create_tab3_gui(self, tab):
-        # 탭 3의 GUI 생성
-        self.predict_tab = predict.Predict(tab)
+    # def create_tab3_gui(self, tab):
+    #     # 탭 3의 GUI 생성
+    #     self.predict_tab = predict.Predict(tab)
 
 
     def on_close(self):
@@ -63,9 +63,9 @@ class MainApp():
         stop_process2 = self.train_tab.stop_process()
         if stop_process2 == -1:
             return
-        stop_process3 = self.predict_tab.stop_process()
-        if stop_process3 == -1:
-            return
+        # stop_process3 = self.predict_tab.stop_process()
+        # if stop_process3 == -1:
+        #     return
         self.preprocess_tab.stop_process()
 
         # 쓰레드가 실행 중이 아니면 윈도우를 종료
@@ -99,14 +99,14 @@ class MainApp():
         self.notebook.add(self.tab2, text='Yolo Training')
 
         # 탭 3 생성
-        self.tab3 = ttk.Frame(self.notebook)
-        self.notebook.add(self.tab3, text="Yolo Predict")
+        # self.tab3 = ttk.Frame(self.notebook)
+        # self.notebook.add(self.tab3, text="Yolo Predict")
 
         # 각 탭에 대한 GUI 생성
         self.create_tab_gui(self.tab)
         self.create_tab1_gui(self.tab1)
         self.create_tab2_gui(self.tab2)
-        self.create_tab3_gui(self.tab3)
+        # self.create_tab3_gui(self.tab3)
 
 
         # GUI를 닫을 때 추가 작업을 수행하기 위한 이벤트 바인딩

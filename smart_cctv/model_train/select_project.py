@@ -1,7 +1,8 @@
 import tkinter as tk
 from tkinter import filedialog
-import os
+from ultralytics import settings
 from PIL import Image, ImageTk
+import os
 
 
 
@@ -14,9 +15,18 @@ class Select_project():
 
 
     def change_project(self):
+        # MainApp 클래스의 인스턴스 속성값 변경
         self.instance.project_path = self.project_dir_entry.get()
         self.instance.dataset_path = self.dataset_dir_entry.get()
         self.instance.runs_path = self.runs_dir_entry.get()
+
+        self.change_yolo_settings()
+
+
+    def change_yolo_settings(self):
+        # settings.yaml 파일 수정
+        settings.update({'datasets_dir': self.instance.dataset_path})
+        settings.update({'runs_dir': self.instance.runs_path})
 
 
     def change_project_dir(self):
@@ -29,10 +39,12 @@ class Select_project():
 
             # dataset, runs 디렉토리 엔트리 초기화
             self.dataset_dir_entry.delete(0, tk.END)
-            self.dataset_dir_entry.insert(tk.END, "data/dataset")
+            dataset_path = os.path.join(dir_path, "data", "dataset")
+            self.dataset_dir_entry.insert(tk.END, dataset_path)
 
             self.runs_dir_entry.delete(0, tk.END)
-            self.runs_dir_entry.insert(tk.END, "runs")
+            runs_path = os.path.join(dir_path, "runs")
+            self.runs_dir_entry.insert(tk.END, runs_path)
 
 
     def change_dataset_dir(self):
@@ -56,7 +68,7 @@ class Select_project():
     def create_gui(self):
         # 폴더 이미지 열기 및 리사이즈
         img = Image.open("./images/folder.png")
-        img = img.resize((30, 20), Image.Resampling.LANCZOS)  # 원하는 크기로 리사이즈 (가로, 세로)
+        img = img.resize((42, 28), Image.Resampling.LANCZOS)  # 원하는 크기로 리사이즈 (가로, 세로)
         # Tkinter에서 사용할 수 있는 이미지로 변환
         self.folder_image = ImageTk.PhotoImage(img)
 
@@ -78,7 +90,7 @@ class Select_project():
         self.project_dir_label = tk.Label(self.main_frame, text="Project Dir: ", bg="white", font=label_font)
         self.project_dir_label.grid(row=1, column=0, padx=10, pady=10)
 
-        self.project_dir_entry = tk.Entry(self.main_frame, width=50)
+        self.project_dir_entry = tk.Entry(self.main_frame, width=80)
         self.project_dir_entry.grid(row=1, column=1, pady=10)
         self.project_dir_entry.insert(tk.END, self.instance.project_path)
 
@@ -90,7 +102,7 @@ class Select_project():
         self.dataset_dir_label = tk.Label(self.main_frame, text="Dataset Dir: ", bg="white", font=label_font)
         self.dataset_dir_label.grid(row=2, column=0, padx=10, pady=10)
 
-        self.dataset_dir_entry = tk.Entry(self.main_frame, width=50)
+        self.dataset_dir_entry = tk.Entry(self.main_frame, width=80)
         self.dataset_dir_entry.grid(row=2, column=1, pady=10)
         self.dataset_dir_entry.insert(tk.END, self.instance.dataset_path)
 
@@ -102,7 +114,7 @@ class Select_project():
         self.runs_dir_label = tk.Label(self.main_frame, text="Runs Dir: ", bg="white", font=label_font)
         self.runs_dir_label.grid(row=3, column=0, padx=10, pady=10)
 
-        self.runs_dir_entry = tk.Entry(self.main_frame, width=50)
+        self.runs_dir_entry = tk.Entry(self.main_frame, width=80)
         self.runs_dir_entry.grid(row=3, column=1, pady=10)
         self.runs_dir_entry.insert(tk.END, self.instance.runs_path)
 
@@ -111,7 +123,7 @@ class Select_project():
 
 
         # 프로젝트 바꾸기 버튼
-        self.change_project_button = tk.Button(self.main_frame, text="Change Project", font=label_font, command=self.change_project)
+        self.change_project_button = tk.Button(self.main_frame, text="Change Project", width=30, height=2, font=label_font, command=self.change_project)
         self.change_project_button.grid(row=4, column=0, columnspan=3, padx=10, pady=30)
 
 

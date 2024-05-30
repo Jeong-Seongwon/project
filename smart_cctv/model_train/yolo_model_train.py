@@ -12,11 +12,13 @@ import yolo_predict
 
 
 class Train():
-    def __init__(self, top):
+    def __init__(self, top, instance):
         self.top = top
+        self.instance = instance
+
         self.train_thread = None  # train_thread 속성 초기화
-        self.dataset_dir = settings['datasets_dir'] # 데이터셋 기본 경로
-        self.runs_dir = settings['runs_dir'] # 학습 결과 기본 경로
+        self.dataset_dir = self.instance.dataset_path # 데이터셋 기본 경로
+        self.runs_dir = self.instance.runs_path # 학습 결과 기본 경로
 
         self.create_gui()
 
@@ -31,6 +33,7 @@ class Train():
             return
 
         self.dataset_dir = dataset_dir
+        self.instance.dataset_path = dataset_dir # MainApp 인스턴스 속성값 변경
 
         settings.update({'datasets_dir': self.dataset_dir})
 
@@ -42,6 +45,7 @@ class Train():
         runs_dir = filedialog.askdirectory(initialdir=initial_dir, title="학습 결과 경로 설정")
 
         self.runs_dir = runs_dir
+        self.instance.runs_path = runs_dir # MainApp 인스턴스 속성값 변경
 
         settings.update({'runs_dir': self.runs_dir})
 

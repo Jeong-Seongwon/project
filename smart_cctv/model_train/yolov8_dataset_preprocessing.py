@@ -7,18 +7,19 @@ import os
 import numpy as np
 import yaml
 import threading
-
+from ultralytics import settings
 
 
 
 
 class Preprocess():
-    def __init__(self, top):
+    def __init__(self, top, instance):
         self.top = top
+        self.instance = instance
 
         self.label_txt_path = "label.txt"
         self.label_yaml_path = "label.yaml"
-        self.save_dir_path = ""
+        self.save_dir_path = self.instance.dataset_path
 
         self.height = 0
         self.width = 0
@@ -496,11 +497,15 @@ class Preprocess():
 
     def change_save_dir(self):
         # 파일 저장 경로 재지정
-        dir_path = filedialog.askdirectory(initialdir="./data")
+        dir_path = filedialog.askdirectory(initialdir=self.save_dir_path)
 
         if dir_path:
             self.save_dir_path = dir_path
-            self.my_log("change save dir!")
+            self.instance.dataset_path = dir_path # 데이터셋 경로 재설정
+            # settings.yaml 파일 수정
+            settings.update({'datasets_dir': self.instance.dataset_path})
+
+            self.my_log("change save dir! \n" + dir_path)
 
 
     def open_save_folder(self):
