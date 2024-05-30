@@ -15,17 +15,32 @@ def install_dependencies():
 
 install_dependencies()
 
+
+
+
 import tkinter as tk
 from tkinter import ttk
+import os
 
 import yolov8_dataset_preprocessing as preprocess
 import yolo_model_train as train
 import yolo_predict as predict
+import select_project
+
+
 
 
 class MainApp():
     def __init__(self):
+        self.project_path = os.getcwd() # 현 디렉토리로 기본값 설정
+        self.dataset_path = "data/dataset"
+        self.runs_path = "runs"
+
         self.run()
+
+
+    def create_tab_gui(self, tab):
+        self.select_project_tab = select_project.Select_project(tab, self)
 
 
     def create_tab1_gui(self, tab):
@@ -71,6 +86,10 @@ class MainApp():
         style.configure('TNotebook', background='light yellow')  # 탭 전체의 배경색 설정
         style.configure('TNotebook.Tab', font=('Helvetica', 12, 'bold'), padding=[10, 5])  # 글꼴 및 텍스트 스타일 변경
 
+        # select_project 탭 생성
+        self.tab = ttk.Frame(self.notebook)
+        self.notebook.add(self.tab, text='Select Project')
+
         # 탭 1 생성
         self.tab1 = ttk.Frame(self.notebook)
         self.notebook.add(self.tab1, text='Dataset Preprocessing')
@@ -84,6 +103,7 @@ class MainApp():
         self.notebook.add(self.tab3, text="Yolo Predict")
 
         # 각 탭에 대한 GUI 생성
+        self.create_tab_gui(self.tab)
         self.create_tab1_gui(self.tab1)
         self.create_tab2_gui(self.tab2)
         self.create_tab3_gui(self.tab3)
