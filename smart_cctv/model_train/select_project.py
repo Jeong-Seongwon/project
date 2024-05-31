@@ -9,7 +9,7 @@ import os
 class Select_project():
     def __init__(self, top, instance):
         self.top = top
-        self.instance = instance
+        self.instance = instance # 메인 클래스의 인스턴스
 
         self.create_gui()
 
@@ -92,7 +92,7 @@ class Select_project():
 
         self.project_dir_entry = tk.Entry(self.main_frame, width=80)
         self.project_dir_entry.grid(row=1, column=1, pady=10)
-        self.project_dir_entry.insert(tk.END, self.instance.project_path)
+        self.project_dir_entry.insert(tk.END, self.instance.project_path) # 기본값 입력
 
         self.change_project_dir_button = tk.Button(self.main_frame, image=self.folder_image, command=self.change_project_dir)
         self.change_project_dir_button.grid(row=1, column=2, padx=10, pady=10)
@@ -104,7 +104,7 @@ class Select_project():
 
         self.dataset_dir_entry = tk.Entry(self.main_frame, width=80)
         self.dataset_dir_entry.grid(row=2, column=1, pady=10)
-        self.dataset_dir_entry.insert(tk.END, self.instance.dataset_path)
+        self.dataset_dir_entry.insert(tk.END, self.instance.dataset_path) # 기본값 입력
 
         self.change_dataset_dir_button = tk.Button(self.main_frame, image=self.folder_image, command=self.change_dataset_dir)
         self.change_dataset_dir_button.grid(row=2, column=2, padx=10, pady=10)
@@ -116,13 +116,13 @@ class Select_project():
 
         self.runs_dir_entry = tk.Entry(self.main_frame, width=80)
         self.runs_dir_entry.grid(row=3, column=1, pady=10)
-        self.runs_dir_entry.insert(tk.END, self.instance.runs_path)
+        self.runs_dir_entry.insert(tk.END, self.instance.runs_path) # 기본값 입력
 
         self.change_runs_dir_button = tk.Button(self.main_frame, image=self.folder_image, command=self.change_runs_dir)
         self.change_runs_dir_button.grid(row=3, column=2, padx=10, pady=10)
 
 
-        # 프로젝트 바꾸기 버튼
+        # 프로젝트 설정 버튼
         self.change_project_button = tk.Button(self.main_frame, text="Change Project", width=30, height=2, font=label_font, command=self.change_project)
         self.change_project_button.grid(row=4, column=0, columnspan=3, padx=10, pady=30)
 
@@ -131,8 +131,8 @@ class Select_project():
 
 
 
-class Instance:
-    def __init__(self, project_path, dataset_path, runs_path):
+class Instance: # 코드 디버깅을 위한 인스턴스 클래스
+    def __init__(self, project_path="C:/path/project", dataset_path="data/dataset", runs_path="runs"):
         self.project_path = project_path
         self.dataset_path = dataset_path
         self.runs_path = runs_path
@@ -142,7 +142,7 @@ class Instance:
 if __name__ == "__main__":
     top = tk.Tk()
 
-    instance = Instance("C:/path/project", "data/dataset", "runs")
+    instance = Instance() # 코드 디버깅을 위한 인스턴스
 
     Select_project(top, instance)
 

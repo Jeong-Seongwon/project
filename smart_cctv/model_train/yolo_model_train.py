@@ -7,14 +7,12 @@ import os
 import threading
 
 
-import yolo_predict
-
 
 
 class Train():
     def __init__(self, top, instance):
         self.top = top
-        self.instance = instance
+        self.instance = instance # 메인 클래스의 인스턴스
 
         self.train_thread = None  # train_thread 속성 초기화
         self.dataset_dir = self.instance.dataset_path # 데이터셋 기본 경로
@@ -22,7 +20,7 @@ class Train():
 
         self.create_gui()
 
-    # setting.yaml 파일 datasets_dir 경로 수정
+
     def dataset_path(self):
         # 새로운 dataset_dir 경로
         initial_dir = os.path.dirname(self.dataset_dir) # 데이터셋 경로 상위 폴더
@@ -35,11 +33,12 @@ class Train():
         self.dataset_dir = dataset_dir
         self.instance.dataset_path = dataset_dir # MainApp 인스턴스 속성값 변경
 
+        # setting.yaml 파일 datasets_dir 경로 수정
         settings.update({'datasets_dir': self.dataset_dir})
 
         self.update_data_dir_entry()
 
-    # runs_dir 경로 수정
+
     def runs_path(self):
         initial_dir = os.getcwd() # 현재 작업 디렉토리를 가져옴
         runs_dir = filedialog.askdirectory(initialdir=initial_dir, title="학습 결과 경로 설정")
@@ -47,12 +46,14 @@ class Train():
         self.runs_dir = runs_dir
         self.instance.runs_path = runs_dir # MainApp 인스턴스 속성값 변경
 
+        # setting.yaml 파일 runs_dir 경로 수정
         settings.update({'runs_dir': self.runs_dir})
 
         self.update_runs_dir_entry()
 
 
     def update_data_dir_entry(self):
+        # 데이터셋 경로 엔트리 수정
         self.data_dir_entry.config(state="normal")
         self.data_dir_entry.delete(0, tk.END)
         self.data_dir_entry.insert(0, self.dataset_dir)
@@ -60,6 +61,7 @@ class Train():
 
 
     def update_runs_dir_entry(self):
+        # 학습 결과 경로 수정
         self.runs_dir_entry.config(state="normal")
         self.runs_dir_entry.delete(0, tk.END)
         self.runs_dir_entry.insert(0, self.runs_dir)
@@ -73,6 +75,7 @@ class Train():
 
 
     def train(self):
+        # 모델 학습
         model = self.model_option.get() + ".pt"
         epochs = int(self.epochs_entry.get())
 
@@ -88,7 +91,7 @@ class Train():
             self.my_log(f"모델  :  {model}")
             self.my_log(f"에폭  :  {epochs}")
 
-            results = self.yolo_train(model=model, epochs=epochs)
+            results = self.yolo_train(model=model, epochs=epochs) # yolo 학습
 
             if results:
                 # 학습 결과 가져오기
@@ -128,12 +131,9 @@ class Train():
                 self.my_log("-----------------")
                 self.my_log("학습 완료")
 
-                # 결과 이미지 표시
+                # 학습 결과 이미지 표시
                 result_folder_path = self.get_results_path()
                 self.update_results_image(result_folder_path)
-
-                # yolo_predict의 모델리스트 업데이트
-                yolo_predict.Predict().model_list_show()
 
             else:
                 self.my_log("-----------------")
@@ -142,7 +142,7 @@ class Train():
 
 
     def yolo_train(self, model='yolov8n.pt', epochs=100, imgsz=640):
-        # Load a pretrained YOLO model (recommended for training)
+        # yolo 학습
         model = YOLO(model)
         results = model.train(data='label.yaml', epochs=epochs, imgsz=imgsz)
         return results
@@ -209,11 +209,13 @@ class Train():
 
 
     def stop_process(self):
+        # 프로그램 중지 프로세스
         if self.train_thread and self.train_thread.is_alive():
             response = messagebox.askyesno("경고", "학습 진행중입니다. 종료 하시겠습니까?")
             if not response:
-                return -1
+                return -1 # 프로그램 중지 취소
         
+        # settings.yaml 파일 초기화
         settings.update({'datasets_dir': 'data/dataset'})
         settings.update({'runs_dir': 'runs'})
 
@@ -222,6 +224,7 @@ class Train():
         self.train_frame = tk.Frame(self.top)
         self.train_frame.grid(row=0, column=0, padx=5, pady=5)
 
+        # 모델 선택
         self.model_label = tk.Label(self.train_frame, text="model:")
         self.model_label.grid(row=0, column=0, padx=3, pady=3, sticky="e")
 
@@ -232,7 +235,7 @@ class Train():
         self.model_option_combobox.current(0) #0번째로 콤보박스 초기화
         self.model_option_combobox.grid(row=0, column=1, padx=3, pady=3, sticky="w") #콤보박스 배치
 
-
+        # epochs 입력
         self.epochs_label = tk.Label(self.train_frame, text="epochs:")
         self.epochs_label.grid(row=1, column=0, padx=3, pady=3, sticky="e")
 
@@ -240,6 +243,7 @@ class Train():
         self.epochs_entry.insert(tk.END, 100)
         self.epochs_entry.grid(row=1, column=1, padx=3, pady=3, sticky="w")
 
+        # dataset 경로
         self.data_dir_label = tk.Label(self.train_frame, text="data_dir")
         self.data_dir_label.grid(row=2, column=0, padx=3, pady=3, sticky="e")
 
@@ -247,7 +251,7 @@ class Train():
         self.data_dir_entry.grid(row=2, column=1, padx=3, pady=3, sticky="w")
         self.update_data_dir_entry()
 
-
+        # runs 경로
         self.runs_dir_label = tk.Label(self.train_frame, text="runs_dir")
         self.runs_dir_label.grid(row=3, column=0, padx=3, pady=3, sticky="e")
 
@@ -255,13 +259,15 @@ class Train():
         self.runs_dir_entry.grid(row=3, column=1, padx=3, pady=3, sticky="w")
         self.update_runs_dir_entry()
 
-
+        # dataset 경로 수정
         self.change_data_dir_button = tk.Button(self.train_frame, text="change_data_dir", width=25, height=2, command=self.dataset_path)
         self.change_data_dir_button.grid(row=4, column=0, columnspan=2, padx=3, pady=3)
 
+        # runs 경로 수정
         self.change_runs_dir_button = tk.Button(self.train_frame, text="Change_runs_dir", width=25, height=2, command=self.runs_path)
         self.change_runs_dir_button.grid(row=5, column=0, columnspan=2, padx=3, pady=3)
 
+        # 학습 시작 버튼
         self.train_button = tk.Button(self.train_frame, text="Yolo Train", bg="light gray", width=25, height=2, command=self.start_training)
         self.train_button.grid(row=6, column=0, columnspan=2, padx=3, pady=3)
 
@@ -277,7 +283,7 @@ class Train():
         self.text_log.grid(row=8, column=0, columnspan=2, padx=3, pady=3)
 
 
-
+        # 학습 결과
         self.results_frame = tk.Frame(self.top)
         self.results_frame.grid(row=0, column=1, padx=5, pady=5)
 
@@ -301,12 +307,27 @@ class Train():
         self.results_label = tk.Label(self.result_frame)
         self.results_label.pack(side="left")
 
-        self.update_results_image()
+        self.update_results_image() # 학습 결과 기본값 설정
+
+
+
+
+
+
+
+class Instance: # 코드 디버깅을 위한 인스턴스 클래스
+    def __init__(self, project_path="C:/path/project", dataset_path="data/dataset", runs_path="runs"):
+        self.project_path = project_path
+        self.dataset_path = dataset_path
+        self.runs_path = runs_path
+
 
 
 if __name__ == "__main__":
     top = tk.Tk()
 
-    Train(top)
+    instance = Instance() # 코드 디버깅을 위한 인스턴스
+
+    Train(top, instance)
 
     top.mainloop()

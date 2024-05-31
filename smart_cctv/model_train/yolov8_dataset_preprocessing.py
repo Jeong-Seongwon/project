@@ -15,44 +15,47 @@ from ultralytics import settings
 class Preprocess():
     def __init__(self, top, instance):
         self.top = top
-        self.instance = instance
+        self.instance = instance # 메인 클래스의 인스턴스
 
-        self.label_txt_path = "label.txt"
-        self.label_yaml_path = "label.yaml"
-        self.save_dir_path = self.instance.dataset_path
+        self.label_txt_path = "label.txt" # label 목록
+        self.label_yaml_path = "label.yaml" # 학습할 yaml 파일
+
+        self.save_dir_path = self.instance.dataset_path # 메인 클래스의 인스턴스 속성값
 
         self.height = 0
         self.width = 0
-        self.scale = 1
-        self.origin_image = None
-        self.image = None
-        self.cap = None
+        self.scale = 1 # 줌 스케일
+        self.brightness = 1 # 밝기
 
-        self.video_playing = False
-        self.is_image = True
+        self.origin_image = None # 원본 이미지
+        self.image = None # 현재 이미지
+        self.cap = None # 동영상
 
-        self.selection_active = False
+        self.video_playing = False # 동영상 재생 중인지 확인
+        self.is_image = True # 이미지, 동영상 파일 토글
 
-        self.labeled_images = []
-        self.toggle_gray_image = False
-        self.brightness = 1
-        self.selected_data_option = "train"
+        self.selection_active = False # 렉터박스 그리기
+        self.labeled_images = [] # 렉터박스를 그린 이미지 목록
+
+        self.toggle_gray_image = False # 그레이 이미지 토글
+        
+        self.selected_data_option = "train" # 데이터 속성 기본값 설정
 
         self.create_gui()
 
 
-    def toggle_image_video(self):
+    def toggle_image_video(self): # 이미지 파일과 동영상 파일 선택 토글
         self.is_image = not self.is_image
         if self.is_image:
             self.toggle_image_video_button.config(text="Image")
             self.my_log("Image Data Preprocessing...")
-            self.reset()
-            self.create_image_canvas_frame()
+            self.reset() # 각종 변수 초기화
+            self.create_image_canvas_frame() # 이미지 프레임
         else:
             self.toggle_image_video_button.config(text="Video")
             self.my_log("Video Data Preprocessing...")
-            self.reset()
-            self.create_video_canvas_frame()
+            self.reset() # 변수 초기화
+            self.create_video_canvas_frame() # 동영상 프레임
 
 
     def create_image_canvas_frame(self):
@@ -85,7 +88,7 @@ class Preprocess():
         # 영상 제어 위젯을 담을 프레임 생성
         self.video_controls_frame = tk.Frame(self.image_canvas_frame)
         self.video_controls_frame.grid(row=1, column=0, sticky="ew", pady=(5, 0))
-
+        # 영상 프레임 슬라이더
         self.frame_slider = tk.Scale(self.video_controls_frame, from_=1, to=1, orient="horizontal", command=self.move_to_frame)
         self.frame_slider.pack(side="top", fill="x", padx=10, pady=5)
 
@@ -103,17 +106,17 @@ class Preprocess():
         self.next_frame_button.pack(side="left", padx=(0, 5))
 
 
-    def configure_frame_slider(self):
+    def configure_frame_slider(self): # 프레임 슬라이더 맥스 프레임 수정
         max_frame = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
         self.frame_slider.config(to=max_frame)
 
 
-    def move_to_frame(self, frame_number):
+    def move_to_frame(self, frame_number): # 프레임 슬라이더로 영상 검색
         frame_number = int(frame_number)
         self.cap.set(cv2.CAP_PROP_POS_FRAMES, frame_number - 1)
 
 
-    def reset(self):
+    def reset(self): # 각종 변수 초기화
         self.file_listbox.delete(0, tk.END) # 파일 목록 초기화
         self.image_canvas.delete("all") # 이미지 캔버스 초기화
         # 라벨링 이미지 초기화
@@ -238,14 +241,14 @@ class Preprocess():
 
         # 비디오 재생
         self.my_log("load video : " + video_path)
-        self.configure_frame_slider()
+        self.configure_frame_slider() # 프레임 슬라이더 맥스 프레임 수정
         if not self.video_playing:
-            self.toggle_play()
+            self.toggle_play() # 동영상 정지 중 플레이 토글 실행
         else:
             self.play_video_thread()
 
 
-    def toggle_play(self):
+    def toggle_play(self): # 동영상 플레이 토글
         self.video_playing = not self.video_playing
         if self.video_playing:
             self.pause_button.config(text="⏸️")
@@ -303,7 +306,7 @@ class Preprocess():
 
 
     def image_print(self):
-        if self.toggle_gray_image:
+        if self.toggle_gray_image: # 그레이 이미지 토글 체크
             self.image = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
         else:
             self.image = self.origin_image.copy()
@@ -327,8 +330,8 @@ class Preprocess():
         self.image_canvas.config(scrollregion=(0, 0, photo.width(), photo.height()))
 
 
-    def file_open(self):
-        if self.is_image:
+    def file_open(self): # 파일 오픈 버튼
+        if self.is_image: # 이미지, 동영상 토글 체크
             # 이미지 파일 확장자
             filetypes = [("Image files", "*.jpg;*.jpeg;*.png;*.gif;*.bmp")]
         else:
@@ -337,16 +340,16 @@ class Preprocess():
 
         file_paths = filedialog.askopenfilenames(initialdir="./data", filetypes=filetypes)
         if file_paths:
-            self.file_listbox.delete(0, tk.END)
-            for file_path in file_paths:
+            self.file_listbox.delete(0, tk.END) # 파일 리스트박스 초기화
+            for file_path in file_paths: # 파일 목록 리스트박스 삽입
                 self.file_listbox.insert(tk.END, file_path)
             self.file_listbox.selection_set(0)  # 첫 번째 아이템 선택
-            self.file_listbox_selected()
+            self.file_listbox_selected() # 파일 리스트박스 선택 함수 실행
             self.my_log("open file : " + file_path)
 
 
-    def dir_open(self):
-        if self.is_image:
+    def dir_open(self): # 폴더 오픈 버튼
+        if self.is_image: # 이미지, 동영상 토글 체크
             # 이미지 파일 확장자
             extensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp"]
         else:
@@ -356,11 +359,11 @@ class Preprocess():
         dir_path = filedialog.askdirectory(initialdir="./data")
         if dir_path:
             self.my_log("open dir : " + dir_path)
-            self.file_listbox.delete(0, tk.END)
+            self.file_listbox.delete(0, tk.END) # 파일 리스트박스 초기화
             for file_name in os.listdir(dir_path):
                 file_path = os.path.join(dir_path, file_name)
 
-                # 파일이 이미지 파일인지 확인
+                # 파일 확장자 확인 후 파일 리스트박스 삽입
                 if os.path.isfile(file_path) and file_name.lower().endswith(tuple(extensions)):
                     self.file_listbox.insert(tk.END, file_path)
             self.file_listbox.selection_set(0)  # 첫 번째 아이템 선택
@@ -411,7 +414,7 @@ class Preprocess():
             image_pil = Image.fromarray(self.image)
             image_pil_width, image_pil_height = image_pil.size
 
-            file_name = "data.jpg"
+            file_name = "data.jpg" # 임의로 데이터 파일 이름 지정
             
             if self.save_dir_path:
                 # train, valid, test 데이터 셋 나누기
@@ -421,6 +424,7 @@ class Preprocess():
                     os.makedirs(data_save_dir_path)
                     self.my_log("make dir : " + data_save_dir_path)
 
+                # 이미지, 라벨 폴더
                 image_save_path = os.path.join(data_save_dir_path, "images")
                 label_save_path = os.path.join(data_save_dir_path, "labels")
 
@@ -438,7 +442,7 @@ class Preprocess():
                 label_text_file_name = base + ".txt"
                 label_file_path = os.path.join(label_save_path, label_text_file_name)
 
-            else:
+            else: # 저장 경로가 없는 경우 저장 경로 지정 후 재귀
                 self.change_save_dir()
                 self.save_file()
                 return
@@ -466,7 +470,7 @@ class Preprocess():
                 # 이미지 저장
                 image_pil.save(image_file_path)
 
-                label_list = []
+                label_list = [] # 라벨 리스트 불러오기
                 with open(self.label_txt_path, 'r') as file:
                     for line in file:
                         line = line.strip()
@@ -475,6 +479,7 @@ class Preprocess():
                 # 라벨 텍스트 파일 저장
                 with open(label_file_path, 'w') as file:
                     for item in self.labeled_images:
+                        # yolo 학습 데이터에 맞게 데이터 수정
                         label, min_x, min_y, max_x, max_y = item
                         center_x = (min_x + max_x) / 2
                         center_y = (min_y + max_y) / 2
@@ -496,7 +501,7 @@ class Preprocess():
 
 
     def change_save_dir(self):
-        # 파일 저장 경로 재지정
+        # 파일 저장 경로 지정
         dir_path = filedialog.askdirectory(initialdir=self.save_dir_path)
 
         if dir_path:
@@ -520,6 +525,7 @@ class Preprocess():
 
 
     def start_drag(self, event):
+        # 이미지 캔버스 드래그 시작
         self.image_canvas.scan_mark(event.x, event.y)
 
     def drag_to_scroll(self, event):
@@ -528,18 +534,20 @@ class Preprocess():
 
 
     def create_rectbox(self):
-        if not self.selection_active:
-            # create_rectbox 활성화
+        if not self.selection_active: # create_rectbox 활성화
+            # 이미지 캔버스 드래그 비활성화
             self.image_canvas.unbind("<Button-1>")
             self.image_canvas.unbind("<B1-Motion>")
+            # 사각형 그리기 활성화
             self.image_canvas.bind("<Button-1>", self.start_selection)
             self.image_canvas.bind("<ButtonRelease-1>", self.end_selection)
             self.selection_active = True
             self.create_rectbox_button.configure(bg="#A0A0A0")  # 버튼 색상을 변경합니다.
-        else:
-            # create_rectbox 비활성화
+        else: # create_rectbox 비활성화
+            # 사각형 그리기 비활성화
             self.image_canvas.unbind("<Button-1>")
             self.image_canvas.unbind("<ButtonRelease-1>")
+            # 이미지 캔버스 드래그 활성화
             self.image_canvas.bind("<Button-1>", self.start_drag)
             self.image_canvas.bind("<B1-Motion>", self.drag_to_scroll)
             self.selection_active = False
@@ -564,13 +572,14 @@ class Preprocess():
             self.labeled_image_listbox.selection_clear(0, tk.END)  # 기존 선택 해제
             self.labeled_image_listbox.selection_set(tk.END)
             self.on_labeled_image_listbox_select()
-            self.create_rectbox()
+            self.create_rectbox() # 사각형을 그린 후 create_rectbox 비활성화
             self.my_log("create rectbox.")
         else:
             messagebox.showerror("경고", "라벨을 확인해 주세요.")
 
 
     def on_labeled_image_listbox_select(self, event=None):
+        # 라벨링한 이미지 리스트박스 선택 시 사각형 표시
         labeled_image_index = self.labeled_image_listbox.curselection()
         if labeled_image_index:
             label, start_x, start_y, end_x, end_y = self.labeled_images[labeled_image_index[0]]
@@ -590,6 +599,7 @@ class Preprocess():
 
 
     def delete_rectbox(self):
+        # 선택된 라벨링한 이미지 리스트박스 제거
         selected_index = self.labeled_image_listbox.curselection()
         
         if selected_index:
@@ -605,18 +615,18 @@ class Preprocess():
             # 캔버스에서 사각형을 지웁니다.
             self.image_canvas.delete("selection")
 
-            if index < self.labeled_image_listbox.size():
+            if index < self.labeled_image_listbox.size(): # 다음 항목 있을 때
                 self.labeled_image_listbox.selection_clear(0, tk.END)  # 기존 선택 해제
                 self.labeled_image_listbox.selection_set(index)  # 다음 항목 선택
             else:
-                self.labeled_image_listbox.selection_set(tk.END)
+                self.labeled_image_listbox.selection_set(tk.END) # 마지막 항목 선택
             self.on_labeled_image_listbox_select()
             self.my_log("delete rectbox.")
 
 
     def zoom_in(self):
         self.scale += 0.1
-        if self.scale > 5:
+        if self.scale > 5: # 최대 500% 확대
             self.scale = 5
         self.zoom_entry.delete(0, tk.END)
         self.zoom_entry.insert(tk.END, int(self.scale*100))
@@ -626,7 +636,7 @@ class Preprocess():
 
     def zoom_out(self):
         self.scale -= 0.1
-        if self.scale < 0.1:
+        if self.scale < 0.1: # 최소 10%
             self.scale = 0.1
         self.zoom_entry.delete(0, tk.END)
         self.zoom_entry.insert(tk.END, int(self.scale*100))
@@ -703,7 +713,7 @@ class Preprocess():
 
 
     def update_brightness_entry(self, event):
-        if event.keysym == "Return":
+        if event.keysym == "Return": # "Enter"키 입력 시 이벤트 연결
             self.update_brightness(event)
 
 
@@ -722,11 +732,13 @@ class Preprocess():
 
 
     def handle_data_option_event(self, event):
+        # 데이터 옵션 선택 이벤트
         self.selected_data_option = self.data_option.get()
         self.my_log("data option : " + self.selected_data_option)
 
 
     def label_add(self):
+        # 라벨 추가
         label = self.label_entry.get()
 
         if label:
@@ -766,9 +778,10 @@ class Preprocess():
 
 
     def label_update(self):
-        old_label_index = self.label_listbox.curselection()
+        # 라벨 수정
+        old_label_index = self.label_listbox.curselection() # 선택된 라벨
         old_label = self.label_listbox.get(old_label_index)
-        new_label = self.label_entry.get()
+        new_label = self.label_entry.get() # 새로운 라벨
 
         if old_label and new_label:
             # txt 파일에서 기존 라벨을 수정
@@ -801,10 +814,11 @@ class Preprocess():
 
 
     def label_del(self):
+        # 라벨 삭제
         label = self.label_entry.get()
 
         if label:
-            if label in self.label_listbox.get(0, tk.END):
+            if label in self.label_listbox.get(0, tk.END): # 입력한 라벨이 있는지 확인
                 self.label_listbox.delete(self.label_listbox.get(0, tk.END).index(label))
 
                 # 파일에서 라벨 삭제
@@ -845,6 +859,7 @@ class Preprocess():
         for line in lines:
             self.label_listbox.insert(tk.END, line.strip())
         
+        # 라벨 엔트리에 라벨 리스트박스 첫 번째 라벨 입력
         self.label_entry.delete(0, tk.END)
         self.label_entry.insert(0, self.label_listbox.get(0))
         self.on_label_entry_change()
@@ -866,6 +881,7 @@ class Preprocess():
 
 
     def on_label_entry_change(self, event=None):
+        # 라벨 엔트리 입력시 이벤트
         label = self.label_entry.get()
         if label in self.label_listbox.get(0, tk.END):
             index = self.label_listbox.get(0, tk.END).index(label)
@@ -875,6 +891,7 @@ class Preprocess():
 
 
     def file_listbox_selected(self, event=None):
+        # 파일 리스트박스 선택 이벤트
         selected_index = self.file_listbox.curselection()  # 선택된 아이템의 인덱스를 가져옵니다.
         if selected_index:
             selected_item = self.file_listbox.get(selected_index)  # 선택된 아이템의 내용을 가져옵니다.
@@ -882,6 +899,7 @@ class Preprocess():
 
 
     def my_log(self, msg):
+        # 텍스트 로그
         self.text_log.config(state="normal")  # 텍스트 위젯을 편집 가능한 상태로 설정
         self.text_log.insert(tk.INSERT, msg + "\r\n")  # 텍스트 삽입
         self.text_log.see("end")  # 스크롤바를 맨 아래로 이동하여 가장 최근에 추가된 텍스트를 표시
@@ -895,30 +913,30 @@ class Preprocess():
     def on_key(self, event):
         # Control키와 Shift키와 동시에 눌렀을 때
         if event.keysym == 'O' and (event.state & 0x4) != 0 and (event.state & 0x1) != 0: # 0x1은 Shift 키
-            self.dir_open()
+            self.dir_open() # Ctrl + Shift + O  폴더 오픈
 
         # Control키와 동시에 눌렀을 때
         if (event.state & 0x4) != 0: # 0x4는 Control 키
             if event.keysym == 's':
-                self.save_file()
+                self.save_file() # Ctrl + s  파일 저장
             if event.keysym == 'o':
-                self.file_open()
+                self.file_open() # Ctrl + o  파일 오픈
 
         # 단일 키
         if event.keysym == 'w':
-            self.create_rectbox()
+            self.create_rectbox() # w  렉터박스 그리기
         if event.keysym == 'q':
-            self.prev_file()
+            self.prev_file() # q  이전 파일
         if event.keysym == 'e':
-            self.next_file()
+            self.next_file() # e  다음 파일
 
         if not self.is_image:
             if event.keysym == 'space':
-                self.toggle_play()
+                self.toggle_play() # space  동영상 플레이 토글
             if event.keysym == 'Right':
-                self.next_frame()
+                self.next_frame() # 오른쪽 방향키  다음 프레임으로 이동
             if event.keysym == 'Left':
-                self.prev_frame()
+                self.prev_frame() # 왼쪽 방향키  이전 프레임으로 이동
 
 
 
@@ -938,6 +956,7 @@ class Preprocess():
 
 
     def stop_process(self):
+        # 프로그램 정지 프로세스
         if self.cap:
             self.cap.release()
 
@@ -945,6 +964,7 @@ class Preprocess():
 
 
     def create_gui(self):
+        # 세팅 프레임
         self.setting_frame = tk.Frame(self.top)
         self.setting_frame.grid(row=0, column=0, padx=30, pady=10)
 
@@ -952,28 +972,28 @@ class Preprocess():
         self.toggle_image_video_button = tk.Button(self.setting_frame, text="Image", width=18, height=2, bg="#FFFFEE", command=self.toggle_image_video)
         self.toggle_image_video_button.pack()
 
-        # 이미지 로드
+        # 파일 오픈 버튼
         self.file_open_button = tk.Button(self.setting_frame, text="Open File", width=18, height=2, command=self.file_open)
         self.file_open_button.pack()
-
+        # 폴더 오픈 버튼
         self.dir_open_button = tk.Button(self.setting_frame, text="Dir Open", width=18, height=2, command=self.dir_open)
         self.dir_open_button.pack()
 
 
-
+        # 구분선
         self.separator_frame = tk.Frame(self.setting_frame, height=3, bg="white")
         self.separator_frame.pack(fill=tk.X, pady=(5, 5))
 
 
-        # 앞뒤 이미지 로드
+        # 다음 파일
         self.next_image_button = tk.Button(self.setting_frame, text="Next File", width=18, height=2, command=self.next_file)
         self.next_image_button.pack()
-
+        # 이전 파일
         self.prev_image_button = tk.Button(self.setting_frame, text="Prev File", width=18, height=2, command=self.prev_file)
         self.prev_image_button.pack()
 
 
-
+        # 구분선
         self.separator_frame1 = tk.Frame(self.setting_frame, height=3, bg="white")
         self.separator_frame1.pack(fill=tk.X, pady=(5, 5))
 
@@ -981,15 +1001,15 @@ class Preprocess():
         # 이미지 저장
         self.save_button = tk.Button(self.setting_frame, text="Save", width=18, height=2, command=self.save_file)
         self.save_button.pack()
-
+        # 저장 경로 수정
         self.change_save_dir_button = tk.Button(self.setting_frame, text="Change Save Dir", width=18, height=2, command=self.change_save_dir)
         self.change_save_dir_button.pack()
-
+        # 저장 경로 폴더 오픈
         self.open_save_folder_button = tk.Button(self.setting_frame, text="Open Save Folder", width=18, height=2, command=self.open_save_folder)
         self.open_save_folder_button.pack()
 
 
-
+        # 구분선
         self.separator_frame2 = tk.Frame(self.setting_frame, height=3, bg="white")
         self.separator_frame2.pack(fill=tk.X, pady=(5, 5))
 
@@ -997,12 +1017,12 @@ class Preprocess():
         # 이미지 선택 사각형 그리기
         self.create_rectbox_button = tk.Button(self.setting_frame, text="Create Rectbox", width=18, height=2, command=self.create_rectbox)
         self.create_rectbox_button.pack()
-
+        # 선택된 사각형 지우기
         self.delete_rectbox_button = tk.Button(self.setting_frame, text="Delete Rectbox", width=18, height=2, command=self.delete_rectbox)
         self.delete_rectbox_button.pack()
 
 
-
+        # 구분선
         self.separator_frame3 = tk.Frame(self.setting_frame, height=3, bg="white")
         self.separator_frame3.pack(fill=tk.X, pady=(5, 5))
 
@@ -1017,7 +1037,7 @@ class Preprocess():
         self.zoom_entry = tk.Entry(self.zoom_frame, width=8)
         self.zoom_entry.insert(tk.END, int(self.scale*100))
         self.zoom_entry.pack(side=tk.LEFT)
-        self.zoom_entry.bind("<KeyRelease-Return>", self.update_zoom_entry)
+        self.zoom_entry.bind("<KeyRelease-Return>", self.update_zoom_entry) # 'Enter'키 입력 바인딩
 
         self.zoom_percent_label = tk.Label(self.zoom_frame, width=6, text="%")
         self.zoom_percent_label.pack(side=tk.LEFT)
@@ -1026,18 +1046,18 @@ class Preprocess():
         self.zoom_out_button.pack()
 
 
-
+        # 구분선
         self.separator_frame4 = tk.Frame(self.setting_frame, height=3, bg="white")
         self.separator_frame4.pack(fill=tk.X, pady=(5, 5))
 
 
-        # 이미지 에디터
+        # 오리지날 이미지
         self.original_image_button = tk.Button(self.setting_frame, text="Original", width=18, height=2, command=self.original_image)
         self.original_image_button.pack()
-
+        # 그레이 이미지 토글 버튼
         self.gray_image_button = tk.Button(self.setting_frame, text="Gray", width=18, height=2, command=self.gray_image)
         self.gray_image_button.pack()
-
+        # 밝기
         self.brightly_image_button = tk.Button(self.setting_frame, text="Brightly", width=18, height=2, command=self.brightly_image)
         self.brightly_image_button.pack()
 
@@ -1057,12 +1077,12 @@ class Preprocess():
 
 
 
-        # 이미지 캔버스
+        # 이미지 캔버스 프레임
         self.create_image_canvas_frame()
 
 
 
-
+        # 라벨 프레임
         self.label_frame = tk.Frame(self.top)
         self.label_frame.grid(row=0, column=2, padx=30, pady=10)
 
@@ -1080,7 +1100,7 @@ class Preprocess():
         self.data_option_combobox.bind("<<ComboboxSelected>>", self.handle_data_option_event)
 
 
-
+        # 구분선
         self.separator_frame_label = tk.Frame(self.label_frame, height=3, bg="white")
         self.separator_frame_label.grid(row=2, column=0, columnspan=4, pady=(5, 5), sticky="ew")
 
@@ -1095,7 +1115,7 @@ class Preprocess():
         self.labeled_image_listbox.bind("<<ListboxSelect>>", self.on_labeled_image_listbox_select)
 
 
-
+        # 구분선
         self.separator_frame_label1 = tk.Frame(self.label_frame, height=3, bg="white")
         self.separator_frame_label1.grid(row=5, column=0, columnspan=4, pady=(5, 5), sticky="ew")
 
@@ -1125,7 +1145,7 @@ class Preprocess():
         self.label_list_show()
 
 
-
+        # 구분선
         self.separator_frame_label2 = tk.Frame(self.label_frame, height=3, bg="white")
         self.separator_frame_label2.grid(row=10, column=0, columnspan=4, pady=(5, 5), sticky="ew")
 
@@ -1158,9 +1178,24 @@ class Preprocess():
         # 키보드 이벤트 바인딩
         self.top.bind('<Key>', self.on_key)
 
+
+
+
+
+
+class Instance: # 코드 디버깅을 위한 인스턴스 클래스
+    def __init__(self, project_path="C:/path/project", dataset_path="data/dataset", runs_path="runs"):
+        self.project_path = project_path
+        self.dataset_path = dataset_path
+        self.runs_path = runs_path
+
+
+
 if __name__ == "__main__":
     top = tk.Tk()
 
-    Preprocess(top)
+    instance = Instance() # 코드 디버깅을 위한 인스턴스
+
+    Preprocess(top, instance)
 
     top.mainloop()

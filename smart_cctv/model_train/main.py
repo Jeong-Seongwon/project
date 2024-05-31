@@ -32,6 +32,7 @@ import select_project
 
 class MainApp():
     def __init__(self):
+        # 프로젝트 경로 설정
         self.project_path = os.getcwd() # 현 디렉토리로 기본값 설정
         self.dataset_path = os.path.join(self.project_path, "data", "dataset")
         self.runs_path = os.path.join(self.project_path, "runs")
@@ -39,22 +40,17 @@ class MainApp():
         self.run()
 
 
-    def create_tab_gui(self, tab):
+    # 각 탭별 gui 생성
+    def create_select_project_tab_gui(self, tab):
         self.select_project_tab = select_project.Select_project(tab, self)
 
-
-    def create_tab1_gui(self, tab):
-        # 탭 1의 GUI 생성
+    def create_preprocess_tab_gui(self, tab):
         self.preprocess_tab = preprocess.Preprocess(tab, self)
 
-
-    def create_tab2_gui(self, tab):
-        # 탭 2의 GUI 생성
+    def create_train_tab_gui(self, tab):
         self.train_tab = train.Train(tab, self)
 
-
-    # def create_tab3_gui(self, tab):
-    #     # 탭 3의 GUI 생성
+    # def create_predict_tab_gui(self, tab):
     #     self.predict_tab = predict.Predict(tab)
 
 
@@ -87,26 +83,26 @@ class MainApp():
         style.configure('TNotebook.Tab', font=('Helvetica', 12, 'bold'), padding=[10, 5])  # 글꼴 및 텍스트 스타일 변경
 
         # select_project 탭 생성
-        self.tab = ttk.Frame(self.notebook)
-        self.notebook.add(self.tab, text='Select Project')
+        self.select_project_tab = ttk.Frame(self.notebook)
+        self.notebook.add(self.select_project_tab, text='Select Project')
 
-        # 탭 1 생성
-        self.tab1 = ttk.Frame(self.notebook)
-        self.notebook.add(self.tab1, text='Dataset Preprocessing')
+        # preprocess 탭 생성
+        self.preprocess_tab = ttk.Frame(self.notebook)
+        self.notebook.add(self.preprocess_tab, text='Dataset Preprocessing')
 
-        # 탭 2 생성
-        self.tab2 = ttk.Frame(self.notebook)
-        self.notebook.add(self.tab2, text='Yolo Training')
+        # train 탭 생성
+        self.train_tab = ttk.Frame(self.notebook)
+        self.notebook.add(self.train_tab, text='Yolo Training')
 
-        # 탭 3 생성
-        # self.tab3 = ttk.Frame(self.notebook)
-        # self.notebook.add(self.tab3, text="Yolo Predict")
+        # predict 탭 생성
+        # self.predict_tab = ttk.Frame(self.notebook)
+        # self.notebook.add(self.predict_tab, text="Yolo Predict")
 
         # 각 탭에 대한 GUI 생성
-        self.create_tab_gui(self.tab)
-        self.create_tab1_gui(self.tab1)
-        self.create_tab2_gui(self.tab2)
-        # self.create_tab3_gui(self.tab3)
+        self.create_select_project_tab_gui(self.select_project_tab)
+        self.create_preprocess_tab_gui(self.preprocess_tab)
+        self.create_train_tab_gui(self.train_tab)
+        # self.create_predict_tab_gui(self.predict_tab)
 
 
         # GUI를 닫을 때 추가 작업을 수행하기 위한 이벤트 바인딩
