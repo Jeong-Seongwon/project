@@ -7,32 +7,52 @@ import os
 
 
 class Select_project():
-    def __init__(self, top, instance):
+    def __init__(self, top, state):
         self.top = top
-        self.instance = instance # 메인 클래스의 인스턴스
+        self.state = state # 상태 관리 객체
+        self.state.add_observer(self.refresh) # 상태 변경 사항 감지
 
         self.create_gui()
 
 
+    def refresh(self): # 변경 사항 반영
+        # 프로젝트 디렉토리 엔트리 수정
+        self.project_dir_entry.delete(0, tk.END)
+        self.project_dir_entry.insert(tk.END, self.state.project_path)
+
+        # dataset, runs 디렉토리 엔트리 수정
+        self.dataset_dir_entry.delete(0, tk.END)
+        self.dataset_dir_entry.insert(tk.END, self.state.dataset_path)
+
+        self.runs_dir_entry.delete(0, tk.END)
+        self.runs_dir_entry.insert(tk.END, self.state.runs_path)
+
+
     def change_project(self):
-        # MainApp 클래스의 인스턴스 속성값 변경
-        self.instance.project_path = self.project_dir_entry.get()
-        self.instance.dataset_path = self.dataset_dir_entry.get()
-        self.instance.runs_path = self.runs_dir_entry.get()
+        # 상태 관리 객체 프로젝트 경로 수정
+        new_project_path = self.project_dir_entry.get()
+        new_dataset_path = self.dataset_dir_entry.get()
+        new_runs_path = self.runs_dir_entry.get()
+
+        self.state.project_path = new_project_path
+        self.state.dataset_path = new_dataset_path
+        self.state.runs_path = new_runs_path
 
         self.change_yolo_settings()
 
 
     def change_yolo_settings(self):
         # settings.yaml 파일 수정
-        settings.update({'datasets_dir': self.instance.dataset_path})
-        settings.update({'runs_dir': self.instance.runs_path})
+        settings.update({'datasets_dir': self.state.dataset_path})
+        settings.update({'runs_dir': self.state.runs_path})
 
 
     def change_project_dir(self):
         dir_path = filedialog.askdirectory(initialdir="./")
 
-        if dir_path and dir_path != self.instance.project_path: # 디렉토리 경로가 없거나 안 바뀌면 실행하지 않음
+        if dir_path and dir_path != self.state.project_path: # 디렉토리 경로가 없거나 안 바뀌면 실행하지 않음
+            dir_path = os.path.normpath(dir_path)  # 경로를 시스템 경로 스타일로 변환
+
             # 프로젝트 디렉토리 엔트리 수정
             self.project_dir_entry.delete(0, tk.END)
             self.project_dir_entry.insert(tk.END, dir_path)
@@ -50,7 +70,9 @@ class Select_project():
     def change_dataset_dir(self):
         dir_path = filedialog.askdirectory(initialdir="./")
 
-        if dir_path and dir_path != self.instance.dataset_path: # 디렉토리 경로가 없거나 안 바뀌면 실행하지 않음
+        if dir_path and dir_path != self.state.dataset_path: # 디렉토리 경로가 없거나 안 바뀌면 실행하지 않음
+            dir_path = os.path.normpath(dir_path)  # 경로를 시스템 경로 스타일로 변환
+
             # dataset 디렉토리 엔트리 수정
             self.dataset_dir_entry.delete(0, tk.END)
             self.dataset_dir_entry.insert(tk.END, dir_path)
@@ -59,7 +81,9 @@ class Select_project():
     def change_runs_dir(self):
         dir_path = filedialog.askdirectory(initialdir="./")
 
-        if dir_path and dir_path != self.instance.runs_path: # 디렉토리 경로가 없거나 안 바뀌면 실행하지 않음
+        if dir_path and dir_path != self.state.runs_path: # 디렉토리 경로가 없거나 안 바뀌면 실행하지 않음
+            dir_path = os.path.normpath(dir_path)  # 경로를 시스템 경로 스타일로 변환
+
             # runs 디렉토리 엔트리 수정
             self.runs_dir_entry.delete(0, tk.END)
             self.runs_dir_entry.insert(tk.END, dir_path)
@@ -92,7 +116,7 @@ class Select_project():
 
         self.project_dir_entry = tk.Entry(self.main_frame, width=80)
         self.project_dir_entry.grid(row=1, column=1, pady=10)
-        self.project_dir_entry.insert(tk.END, self.instance.project_path) # 기본값 입력
+        self.project_dir_entry.insert(tk.END, self.state.project_path) # 기본값 입력
 
         self.change_project_dir_button = tk.Button(self.main_frame, image=self.folder_image, command=self.change_project_dir)
         self.change_project_dir_button.grid(row=1, column=2, padx=10, pady=10)
@@ -104,7 +128,7 @@ class Select_project():
 
         self.dataset_dir_entry = tk.Entry(self.main_frame, width=80)
         self.dataset_dir_entry.grid(row=2, column=1, pady=10)
-        self.dataset_dir_entry.insert(tk.END, self.instance.dataset_path) # 기본값 입력
+        self.dataset_dir_entry.insert(tk.END, self.state.dataset_path) # 기본값 입력
 
         self.change_dataset_dir_button = tk.Button(self.main_frame, image=self.folder_image, command=self.change_dataset_dir)
         self.change_dataset_dir_button.grid(row=2, column=2, padx=10, pady=10)
@@ -116,7 +140,7 @@ class Select_project():
 
         self.runs_dir_entry = tk.Entry(self.main_frame, width=80)
         self.runs_dir_entry.grid(row=3, column=1, pady=10)
-        self.runs_dir_entry.insert(tk.END, self.instance.runs_path) # 기본값 입력
+        self.runs_dir_entry.insert(tk.END, self.state.runs_path) # 기본값 입력
 
         self.change_runs_dir_button = tk.Button(self.main_frame, image=self.folder_image, command=self.change_runs_dir)
         self.change_runs_dir_button.grid(row=3, column=2, padx=10, pady=10)
@@ -142,8 +166,8 @@ class Instance: # 코드 디버깅을 위한 인스턴스 클래스
 if __name__ == "__main__":
     top = tk.Tk()
 
-    instance = Instance() # 코드 디버깅을 위한 인스턴스
+    state = Instance() # 코드 디버깅을 위한 인스턴스
 
-    Select_project(top, instance)
+    Select_project(top, state)
 
     top.mainloop()

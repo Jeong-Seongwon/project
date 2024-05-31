@@ -13,14 +13,15 @@ from ultralytics import settings
 
 
 class Preprocess():
-    def __init__(self, top, instance):
+    def __init__(self, top, state):
         self.top = top
-        self.instance = instance # 메인 클래스의 인스턴스
+        self.state = state # 상태 관리 객체
+        self.state.add_observer(self.refresh) # 상태 변경 사항 감지
 
         self.label_txt_path = "label.txt" # label 목록
         self.label_yaml_path = "label.yaml" # 학습할 yaml 파일
 
-        self.save_dir_path = self.instance.dataset_path # 메인 클래스의 인스턴스 속성값
+        self.save_dir_path = self.state.dataset_path
 
         self.height = 0
         self.width = 0
@@ -42,6 +43,10 @@ class Preprocess():
         self.selected_data_option = "train" # 데이터 속성 기본값 설정
 
         self.create_gui()
+
+
+    def refresh(self): # 상태 변경 사항 반영
+        self.save_dir_path = self.state.dataset_path # 데이터셋 경로 변경 사항 반영
 
 
     def toggle_image_video(self): # 이미지 파일과 동영상 파일 선택 토글
@@ -506,9 +511,9 @@ class Preprocess():
 
         if dir_path:
             self.save_dir_path = dir_path
-            self.instance.dataset_path = dir_path # 데이터셋 경로 재설정
+            self.state.dataset_path = dir_path # 데이터셋 경로 재설정
             # settings.yaml 파일 수정
-            settings.update({'datasets_dir': self.instance.dataset_path})
+            settings.update({'datasets_dir': self.state.dataset_path})
 
             self.my_log("change save dir! \n" + dir_path)
 
@@ -1194,8 +1199,8 @@ class Instance: # 코드 디버깅을 위한 인스턴스 클래스
 if __name__ == "__main__":
     top = tk.Tk()
 
-    instance = Instance() # 코드 디버깅을 위한 인스턴스
+    state = Instance() # 코드 디버깅을 위한 인스턴스
 
-    Preprocess(top, instance)
+    Preprocess(top, state)
 
     top.mainloop()

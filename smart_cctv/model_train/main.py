@@ -26,29 +26,30 @@ import yolov8_dataset_preprocessing as preprocess
 import yolo_model_train as train
 # import yolo_predict as predict
 import select_project
-
+import state
 
 
 
 class MainApp():
     def __init__(self):
-        # 프로젝트 경로 설정
-        self.project_path = os.getcwd() # 현 디렉토리로 기본값 설정
-        self.dataset_path = os.path.join(self.project_path, "data", "dataset")
-        self.runs_path = os.path.join(self.project_path, "runs")
+        # 상태 관리 객체 생성
+        self.state = state.State()
+        self.state.project_path = os.getcwd() # 현 디렉토리로 기본값 설정
+        self.state.dataset_path = os.path.join(self.state.project_path, "data", "dataset")
+        self.state.runs_path = os.path.join(self.state.project_path, "runs")
 
         self.run()
 
 
     # 각 탭별 gui 생성
     def create_select_project_tab_gui(self, tab):
-        self.select_project_tab = select_project.Select_project(tab, self)
+        self.select_project_tab = select_project.Select_project(tab, self.state)
 
     def create_preprocess_tab_gui(self, tab):
-        self.preprocess_tab = preprocess.Preprocess(tab, self)
+        self.preprocess_tab = preprocess.Preprocess(tab, self.state)
 
     def create_train_tab_gui(self, tab):
-        self.train_tab = train.Train(tab, self)
+        self.train_tab = train.Train(tab, self.state)
 
     # def create_predict_tab_gui(self, tab):
     #     self.predict_tab = predict.Predict(tab)

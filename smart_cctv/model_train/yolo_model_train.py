@@ -10,15 +10,23 @@ import threading
 
 
 class Train():
-    def __init__(self, top, instance):
+    def __init__(self, top, state):
         self.top = top
-        self.instance = instance # 메인 클래스의 인스턴스
+        self.state = state # 상태 관리 객체
+        self.state.add_observer(self.refresh) # 상태 변경 사항 감지
 
         self.train_thread = None  # train_thread 속성 초기화
-        self.dataset_dir = self.instance.dataset_path # 데이터셋 기본 경로
-        self.runs_dir = self.instance.runs_path # 학습 결과 기본 경로
+        self.dataset_dir = self.state.dataset_path # 데이터셋 기본 경로
+        self.runs_dir = self.state.runs_path # 학습 결과 기본 경로
 
         self.create_gui()
+
+
+    def refresh(self): # 변경 사항 반영
+        self.dataset_dir = self.state.dataset_path # 데이터셋 경로
+        self.update_data_dir_entry()
+        self.runs_dir = self.state.runs_path # 학습 결과 경로
+        self.update_runs_dir_entry()
 
 
     def dataset_path(self):
@@ -31,7 +39,7 @@ class Train():
             return
 
         self.dataset_dir = dataset_dir
-        self.instance.dataset_path = dataset_dir # MainApp 인스턴스 속성값 변경
+        self.state.dataset_path = dataset_dir # 상태 관리 속성값 변경
 
         # setting.yaml 파일 datasets_dir 경로 수정
         settings.update({'datasets_dir': self.dataset_dir})
@@ -44,7 +52,7 @@ class Train():
         runs_dir = filedialog.askdirectory(initialdir=initial_dir, title="학습 결과 경로 설정")
 
         self.runs_dir = runs_dir
-        self.instance.runs_path = runs_dir # MainApp 인스턴스 속성값 변경
+        self.state.runs_path = runs_dir # MainApp 인스턴스 속성값 변경
 
         # setting.yaml 파일 runs_dir 경로 수정
         settings.update({'runs_dir': self.runs_dir})
@@ -326,8 +334,8 @@ class Instance: # 코드 디버깅을 위한 인스턴스 클래스
 if __name__ == "__main__":
     top = tk.Tk()
 
-    instance = Instance() # 코드 디버깅을 위한 인스턴스
+    state = Instance() # 코드 디버깅을 위한 인스턴스
 
-    Train(top, instance)
+    Train(top, state)
 
     top.mainloop()
