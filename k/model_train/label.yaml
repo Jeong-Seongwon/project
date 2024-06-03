@@ -1,0 +1,9 @@
+names:
+- swoon
+- fight
+- dump
+- vandalism
+nc: 4
+test: test/images
+train: train/images
+val: valid/images

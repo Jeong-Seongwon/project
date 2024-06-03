@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time CCTV Object Detection</title>
+    <style>
+        /* 모달 스타일 */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1; 
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0); 
+            background-color: rgba(0,0,0,0.4); 
+        }
+        .modal-content {
+            position: relative;
+            background-color: #fefefe;
+            margin: auto;
+            padding: 0;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 700px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            animation: animatetop 0.4s;
+        }
+        .close {
+            color: white;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .modal-video {
+            width: 100%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Real-Time CCTV Object Detection</h1>
+    <h2>Welcome, {{ username }}</h2>
+    <!-- CCTV 메인 영상 -->
+    <img src="{{ url_for('generate_video_feed_route', cctv_name='0') }}" width="960" height="540">
+
+    <!-- 서브 CCTV 영상 1 -->
+    <h2>Sub CCTV 1</h2>
+    <img src="{{ url_for('generate_video_feed_route', cctv_name='1') }}" width="480" height="270" onclick="showModal('{{ url_for('generate_video_feed_route', cctv_name='1') }}')">
+
+    <!-- 서브 CCTV 영상 2 -->
+    <h2>Sub CCTV 2</h2>
+    <img src="{{ url_for('generate_video_feed_route', cctv_name='2') }}" width="480" height="270" onclick="showModal('{{ url_for('generate_video_feed_route', cctv_name='2') }}')">
+
+    <!-- 서브 CCTV 영상 3 -->
+    <h2>Sub CCTV 3</h2>
+    <img src="{{ url_for('generate_video_feed_route', cctv_name='3') }}" width="480" height="270" onclick="showModal('{{ url_for('generate_video_feed_route', cctv_name='3') }}')">
+
+    <!-- 서브 CCTV 영상 모달 -->
+    <div id="subCCTVModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <video class="modal-video" controls>
+                <source id="modalVideoSrc" type="video/avi">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // 모달 표시 함수
+        function showModal(videoSrc) {
+            var modal = document.getElementById("subCCTVModal");
+            var modalVideo = document.getElementById("modalVideoSrc");
+            var videoElement = modalVideo.parentElement;
+
+            modalVideo.src = videoSrc;
+            modal.style.display = "block"; // 모달 보이기
+            videoElement.load();
+            videoElement.play();
+        }
+
+        // 모달 닫기 함수
+        function closeModal() {
+            var modal = document.getElementById("subCCTVModal");
+            var modalVideo = document.getElementById("modalVideoSrc");
+            var videoElement = modalVideo.parentElement;
+
+            modal.style.display = "none"; // 모달 숨기기
+            videoElement.pause();
+            modalVideo.src = ""; // 비디오 소스 초기화
+        }
+    </script>
+</body>
+</html>

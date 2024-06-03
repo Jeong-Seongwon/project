@@ -1,0 +1,8 @@
+# Usage: pip install -r requirements.txt
+
+ultralytics>=8.2.15
+sympy>=1.12
+PyYAML>=6.0.1
+pillow>=10.3.0
+numpy>=1.26.4
+opencv-python>=4.9.0.80

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCTV Dashboard</title>
+    <style>
+        /* 로그아웃 폼 스타일 */
+        #logout-form {
+            position: fixed; /* 화면에 고정 */
+            top: 10px; /* 화면 상단으로부터의 거리 */
+            right: 10px; /* 화면 오른쪽으로부터의 거리 */
+        }
+
+        /* 로그아웃 버튼 스타일 */
+        #logout-btn {
+            padding: 10px; /* 버튼 패딩 */
+            background-color: red; /* 배경색 */
+            color: white; /* 글자색 */
+            border: none; /* 테두리 없음 */
+            cursor: pointer; /* 포인터 모양 변경 */
+        }
+        /* 프레임 스타일 */
+        .cctv-frame {
+            width: 70%; /* CCTV 프레임 가로 크기 */
+            height: 90vh; /* 화면 전체의 % 높이로 설정 */
+            float: left; /* 화면 왼쪽에 위치 */
+        }
+        .index-frame {
+            width: 28%; /* 인덱스 프레임 가로 크기 */
+            height: 90vh; /* 화면 전체의 % 높이로 설정 */
+            float: right; /* 화면 오른쪽에 위치 */
+        }
+    </style>
+</head>
+<body>
+    <!-- CCTV 프레임 -->
+    <iframe src="{{ url_for('cctv_frame') }}" name="cctv_frame" class="cctv-frame"></iframe>
+
+    <!-- 인덱스 프레임 -->
+    <iframe src="{{ url_for('index_frame') }}" name="index_frame" class="index-frame"></iframe>
+
+    <!-- 로그아웃 버튼 -->
+    <form id="logout-form" action="{{ url_for('logout') }}" method="GET">
+        <button id="logout-btn" type="submit">로그아웃</button>
+    </form>
+
+    <!-- JavaScript를 이용한 로그아웃 처리 -->
+    <script>
+        // 로그아웃 버튼 클릭 시 로그아웃 처리
+        document.getElementById('logout-form').addEventListener('submit', function(event) {
+            event.preventDefault(); // 기본 동작 방지
+            // 로그아웃 처리
+            fetch(this.action, {
+                method: this.method
+            }).then(response => {
+                if (response.redirected) {
+                    // 로그아웃 후 리다이렉트할 URL 설정
+                    window.location.href = '/login'; // 로그인 페이지로 이동
+                }
+            });
+        });
+    </script>
+</body>
+</html>
