@@ -462,18 +462,13 @@ class CCTVStream:
         # 동영상 프레임의 FPS 설정
         fps = int(self.cap.get(cv2.CAP_PROP_FPS))
 
-        date = datetime.date.today()
+        current_date  = datetime.date.today()
         # 디렉토리 경로 생성
         directory = "../static"
         if not os.path.exists(directory):
             os.makedirs(directory)
 
-        # 영상 저장 경로 설정
-        filename = self.cctv + "-" + date.strftime("%Y-%m-%d") + ".avi"
-        filepath = os.path.join(directory, filename)
-        # VideoWriter 객체 생성
-        fourcc = cv2.VideoWriter_fourcc(*'XVID')
-        self.video_out = cv2.VideoWriter(filepath, fourcc, fps, self.predict_instance.size)
+        self.create_video_writer(current_date, fps, directory)
 
         if not self.cap.isOpened():
             print("Error: Unable to connect to camera")
@@ -481,15 +476,31 @@ class CCTVStream:
 
         while True:
             ret, frame = self.cap.read()
-            resized_frame = cv2.resize(frame, self.predict_instance.size)
-
             if not ret:
                 break
-            
+
+            resized_frame = cv2.resize(frame, self.predict_instance.size)
             self.display_video(resized_frame) # 영상 플레이
             self.video_out.write(resized_frame) # 영상 저장
 
+            # 현재 날짜를 확인하고 날짜가 바뀌었으면 새로운 파일에 저장
+            new_date = datetime.date.today()
+            if new_date != current_date:
+                current_date = new_date
+                self.create_video_writer(current_date, fps, directory)
+
             time.sleep(1/30) # 1초에 30프레임
+
+
+    def create_video_writer(self, current_date, fps, directory):
+        if self.video_out is not None:
+            self.video_out.release()
+
+        filename = self.cctv + "-" + current_date.strftime("%Y-%m-%d") + ".avi"
+        filepath = os.path.join(directory, filename)
+        fourcc = cv2.VideoWriter_fourcc(*'XVID')
+        self.video_out = cv2.VideoWriter(filepath, fourcc, fps, self.predict_instance.size)
+
 
 
     def display_video(self, frame):
