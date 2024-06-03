@@ -37,6 +37,7 @@ class Preprocess():
 
         self.selection_active = False # 렉터박스 그리기
         self.labeled_images = [] # 렉터박스를 그린 이미지 목록
+        self.rect = None  # 렉터박스 드래그 사각형 ID를 저장할 변수
 
         self.toggle_gray_image = False # 그레이 이미지 토글
         
@@ -545,12 +546,14 @@ class Preprocess():
             self.image_canvas.unbind("<B1-Motion>")
             # 사각형 그리기 활성화
             self.image_canvas.bind("<Button-1>", self.start_selection)
+            self.image_canvas.bind("<B1-Motion>", self.drag_selection)
             self.image_canvas.bind("<ButtonRelease-1>", self.end_selection)
             self.selection_active = True
             self.create_rectbox_button.configure(bg="#A0A0A0")  # 버튼 색상을 변경합니다.
         else: # create_rectbox 비활성화
             # 사각형 그리기 비활성화
             self.image_canvas.unbind("<Button-1>")
+            self.image_canvas.bind("<B1-Motion>")
             self.image_canvas.unbind("<ButtonRelease-1>")
             # 이미지 캔버스 드래그 활성화
             self.image_canvas.bind("<Button-1>", self.start_drag)
@@ -559,16 +562,39 @@ class Preprocess():
             self.create_rectbox_button.configure(bg="SystemButtonFace")  # 버튼 색상을 원래대로 변경합니다.
 
 
-    def start_selection(self, event):
+    def start_selection(self, event): # 사각형 그리기 시작점
         # 캔버스 좌표에서 이미지 좌표로 변환합니다.
         self.start_x = self.image_canvas.canvasx(event.x) // self.scale
         self.start_y = self.image_canvas.canvasy(event.y) // self.scale
 
 
-    def end_selection(self, event):
+    def drag_selection(self, event): # 사각형 그리기 드래그
+        # 캔버스 좌표를 이미지 좌표로 변환
+        cur_x = self.image_canvas.canvasx(event.x) // self.scale
+        cur_y = self.image_canvas.canvasy(event.y) // self.scale
+
+        # 이전 사각형을 삭제
+        if self.rect:
+            self.image_canvas.delete(self.rect)
+
+        # 새로운 사각형을 그리고 ID를 저장
+        self.rect = self.image_canvas.create_rectangle(
+            self.start_x * self.scale, self.start_y * self.scale,
+            cur_x * self.scale, cur_y * self.scale,
+            outline='gray', fill='', width=2
+        )
+
+
+    def end_selection(self, event): # 사각형 그리기 엔드포인트
         # 캔버스 좌표에서 이미지 좌표로 변환합니다.
         end_x = self.image_canvas.canvasx(event.x) // self.scale
         end_y = self.image_canvas.canvasy(event.y) // self.scale
+
+        # 드래그한 사각형을 삭제
+        if self.rect:
+            self.image_canvas.delete(self.rect)
+            self.rect = None
+        
         if self.label_entry.get() in self.label_listbox.get(0, tk.END):  # 라벨이 리스트박스안에 있는지 체크
             self.labeled_images.append([self.label_entry.get(), self.start_x, self.start_y, end_x, end_y])
             self.labeled_image_listbox.insert(tk.END, self.label_entry.get())
@@ -599,7 +625,7 @@ class Preprocess():
             end_y *= self.scale
 
             self.image_canvas.delete("selection")  # 이전 선택 영역을 삭제합니다.
-            self.image_canvas.create_rectangle(start_x, start_y, end_x, end_y, outline="gray", fill="blue", width=2, tag="selection")
+            self.image_canvas.create_rectangle(start_x, start_y, end_x, end_y, outline="gray", fill="light gray", width=2, tag="selection")
             self.image_canvas.itemconfig("selection", stipple="gray50")  # 투명한 사각형을 만듭니다.
 
 
@@ -1188,19 +1214,13 @@ class Preprocess():
 
 
 
-class Instance: # 코드 디버깅을 위한 인스턴스 클래스
-    def __init__(self, project_path="C:/path/project", dataset_path="data/dataset", runs_path="runs"):
-        self.project_path = project_path
-        self.dataset_path = dataset_path
-        self.runs_path = runs_path
-
-
-
 if __name__ == "__main__":
+    import state
+
     top = tk.Tk()
 
-    state = Instance() # 코드 디버깅을 위한 인스턴스
+    instance = state.State() # 코드 디버깅을 위한 인스턴스
 
-    Preprocess(top, state)
+    Preprocess(top, instance)
 
     top.mainloop()

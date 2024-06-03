@@ -322,20 +322,13 @@ class Train():
 
 
 
-
-class Instance: # 코드 디버깅을 위한 인스턴스 클래스
-    def __init__(self, project_path="C:/path/project", dataset_path="data/dataset", runs_path="runs"):
-        self.project_path = project_path
-        self.dataset_path = dataset_path
-        self.runs_path = runs_path
-
-
-
 if __name__ == "__main__":
+    import state
+
     top = tk.Tk()
 
-    state = Instance() # 코드 디버깅을 위한 인스턴스
+    instance = state.State() # 코드 디버깅을 위한 인스턴스
 
-    Train(top, state)
+    Train(top, instance)
 
     top.mainloop()
