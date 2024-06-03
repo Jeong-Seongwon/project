@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import filedialog
+from tkinter import filedialog, messagebox
 from ultralytics import settings
 from PIL import Image, ImageTk
 import os
@@ -39,6 +39,8 @@ class Select_project():
         self.state.runs_path = new_runs_path
 
         self.change_yolo_settings()
+
+        messagebox.showinfo("확인", "프로젝트 수정 완료")
 
 
     def change_yolo_settings(self):
